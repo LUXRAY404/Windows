@@ -1,5 +1,8 @@
 @echo off
-:: Check for Admin
+title BitLocker Full Disable Tool
+color 0A
+
+:: ===== Check Administrator =====
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Requesting Administrator Privileges...
@@ -8,30 +11,33 @@ if %errorlevel% neq 0 (
 )
 
 cls
-echo ==============================
-echo      BitLocker Disable Tool
-echo ==============================
+echo ==========================================
+echo        BitLocker Full Disable Tool
+echo ==========================================
 echo.
 
-set /p drive=Enter drive letter (Example: C): 
-
-if "%drive%"=="" (
-    echo No drive entered. Exiting...
-    pause
-    exit
-)
-
-echo.
-echo Checking BitLocker status on %drive%:
-manage-bde -status %drive%:
+:: ===== Show Current Status =====
+echo Current BitLocker Status:
+manage-bde -status C:
 echo.
 
-echo Turning off BitLocker on %drive%:
-manage-bde -off %drive%:
+echo Clearing stored auto-unlock keys...
+manage-bde -autounlock -ClearAllKeys C:
 echo.
 
-echo Decryption process started.
-echo You can monitor progress using:
-echo manage-bde -status %drive%:
+echo Turning OFF BitLocker on C: ...
+manage-bde -off C:
 echo.
-pause
+
+echo ==========================================
+echo Decryption Started.
+echo Monitoring progress...
+echo Press CTRL + C to stop monitoring.
+echo ==========================================
+echo.
+
+:loop
+timeout /t 10 >nul
+cls
+manage-bde -status C:
+goto loop
